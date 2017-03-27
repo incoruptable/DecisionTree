@@ -30,6 +30,7 @@ class Main {
 
     public static void main(String[] args) {
         testLearner(new BaselineLearner());
+        testLearner(new DecisionTree());
         //testLearner(new RandomForest(50));
     }
 }
