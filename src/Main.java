@@ -1,6 +1,8 @@
+import java.util.Random;
 
 class Main {
-    static void test(SupervisedLearner learner, String challenge) {
+
+    static void test(SupervisedLearner learner, String challenge, Random rand) {
         // Load the training data
         String fn = "data/" + challenge;
         Matrix trainFeatures = new Matrix();
@@ -9,7 +11,7 @@ class Main {
         trainLabels.loadARFF(fn + "_train_lab.arff");
 
         // Train the model
-        learner.train(trainFeatures, trainLabels);
+        learner.train(trainFeatures, trainLabels, rand);
 
         // Load the test data
         Matrix testFeatures = new Matrix();
@@ -22,15 +24,16 @@ class Main {
         System.out.println("Misclassifications by " + learner.name() + " at " + challenge + " = " + Integer.toString(misclassifications) + "/" + Integer.toString(testFeatures.rows()));
     }
 
-    public static void testLearner(SupervisedLearner learner) {
-        test(learner, "hep");
-        test(learner, "vow");
-        test(learner, "soy");
+    public static void testLearner(SupervisedLearner learner, Random rand) {
+        test(learner, "hep", rand);
+        test(learner, "vow", rand);
+        test(learner, "soy", rand);
     }
 
     public static void main(String[] args) {
-        testLearner(new BaselineLearner());
-        testLearner(new DecisionTree());
+        Random rand = new Random();
+        testLearner(new BaselineLearner(), rand);
+        testLearner(new DecisionTree(), rand);
         //testLearner(new RandomForest(50));
     }
 }

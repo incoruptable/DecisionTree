@@ -1,3 +1,4 @@
+import java.util.Random;
 
 class BaselineLearner extends SupervisedLearner {
     double[] mode;
@@ -6,7 +7,7 @@ class BaselineLearner extends SupervisedLearner {
         return "Baseline";
     }
 
-    void train(Matrix features, Matrix labels) {
+    void train(Matrix features, Matrix labels, Random rand) {
         mode = new double[labels.cols()];
         for (int i = 0; i < labels.cols(); i++) {
             if (labels.valueCount(i) == 0)

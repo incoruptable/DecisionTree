@@ -4,6 +4,7 @@
 public class InteriorNode extends Node {
     int splitCol;
     double splitVal;
+    boolean isCategorical;
     Node a;
     Node b;
     Node parent;

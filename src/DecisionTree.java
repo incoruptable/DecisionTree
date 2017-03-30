@@ -5,40 +5,74 @@ import java.util.Random;
  */
 public class DecisionTree extends SupervisedLearner {
     Node root;
-    Random rand;
 
     @Override
     String name() {
         return "DecisionTree";
     }
 
-    Node buildTree(Matrix features, Matrix labels) {
+    Node buildTree(Matrix features, Matrix labels, Random rand) {
 
-        int splitCol = rand.nextInt(features.cols());
-        int randRow = rand.nextInt(features.rows());
-        double splitVal = features.row(randRow)[splitCol];
-
-
-        //features
         Matrix af = new Matrix();
-        af.copyMetaData(features);
         Matrix bf = new Matrix();
-        bf.copyMetaData(features);
-
-        //labels
         Matrix al = new Matrix();
-        al.copyMetaData(labels);
         Matrix bl = new Matrix();
-        bl.copyMetaData(labels);
+        double splitVal = 0;
+        int randRow;
+        int splitCol = 0;
+        boolean isCategorical;
+        int tries = 0;
+        while (true) {
 
-        for (int i = 0; i < features.rows(); i++) {
-            if (features.row(i)[splitCol] < splitVal) {
-                Vec.copy(af.newRow(), features.row(i));
-                Vec.copy(al.newRow(), labels.row(i));
-            } else {
-                Vec.copy(bf.newRow(), features.row(i));
-                Vec.copy(bl.newRow(), labels.row(i));
+            splitCol = rand.nextInt(features.cols());
+            randRow = rand.nextInt(features.rows());
+            splitVal = features.row(randRow)[splitCol];
+
+            isCategorical = features.valueCount(splitCol) > 0;
+
+            //features
+
+            af.copyMetaData(features);
+            bf.copyMetaData(features);
+
+            //labels
+
+            al.copyMetaData(labels);
+            bl.copyMetaData(labels);
+
+            for (int i = 0; i < features.rows(); i++) {
+                if (isCategorical) {
+                    if (features.row(i)[splitCol] == splitVal) {
+                        Vec.copy(af.newRow(), features.row(i));
+                        Vec.copy(al.newRow(), labels.row(i));
+                    } else {
+                        Vec.copy(bf.newRow(), features.row(i));
+                        Vec.copy(bl.newRow(), labels.row(i));
+                    }
+                } else {
+                    if (features.row(i)[splitCol] < splitVal) {
+                        Vec.copy(af.newRow(), features.row(i));
+                        Vec.copy(al.newRow(), labels.row(i));
+                    } else {
+                        Vec.copy(bf.newRow(), features.row(i));
+                        Vec.copy(bl.newRow(), labels.row(i));
+                    }
+                }
             }
+
+            if (tries == 5) {
+                break;
+            }
+
+            if (af.rows() < 1 && bf.rows() > 1) {
+                tries++;
+                continue;
+            }
+            if (bf.rows() < 1 && af.rows() > 1) {
+                tries++;
+                continue;
+            }
+            break;
         }
         if (af.rows() < 1) {
             return new LeafNode(bf, bl);
@@ -49,9 +83,10 @@ public class DecisionTree extends SupervisedLearner {
 
         InteriorNode n = new InteriorNode();
         n.splitVal = splitVal;
+        n.isCategorical = isCategorical;
         n.splitCol = splitCol;
-        n.a = buildTree(af, al);
-        n.b = buildTree(bf, bl);
+        n.a = buildTree(af, al, rand);
+        n.b = buildTree(bf, bl, rand);
         return n;
 
 
@@ -59,19 +94,25 @@ public class DecisionTree extends SupervisedLearner {
 
 
     @Override
-    void train(Matrix features, Matrix labels) {
-        rand = new Random();
-        this.root = buildTree(features, labels);
+    void train(Matrix features, Matrix labels, Random rand) {
+        this.root = buildTree(features, labels, rand);
     }
 
     @Override
     void predict(double[] in, double[] out) {
         Node n = root;
         while (!n.isLeaf()) {
-            if (in[((InteriorNode) n).splitCol] < ((InteriorNode) n).splitVal)
-                n = ((InteriorNode) n).a;
-            else
-                n = ((InteriorNode) n).b;
+            if (((InteriorNode) n).isCategorical) {
+                if (in[((InteriorNode) n).splitCol] == ((InteriorNode) n).splitVal)
+                    n = ((InteriorNode) n).a;
+                else
+                    n = ((InteriorNode) n).b;
+            } else {
+                if (in[((InteriorNode) n).splitCol] < ((InteriorNode) n).splitVal)
+                    n = ((InteriorNode) n).a;
+                else
+                    n = ((InteriorNode) n).b;
+            }
         }
         LeafNode leafNode = (LeafNode) n;
         Vec.copy(out, leafNode.label);

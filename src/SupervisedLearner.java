@@ -1,10 +1,11 @@
+import java.util.Random;
 
 abstract class SupervisedLearner {
     /// Return the name of this learner
     abstract String name();
 
     /// Train this supervised learner
-    abstract void train(Matrix features, Matrix labels);
+    abstract void train(Matrix features, Matrix labels, Random rand);
 
     /// Make a prediction
     abstract void predict(double[] in, double[] out);
