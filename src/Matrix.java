@@ -53,11 +53,11 @@ public class Matrix {
     }
 
     public Matrix(Matrix that) {
-        setSize(that.rows(), that.cols());
         m_filename = that.m_filename;
         m_attr_name = new ArrayList<String>();
         m_str_to_enum = new ArrayList<HashMap<String, Integer>>();
         m_enum_to_str = new ArrayList<HashMap<Integer, String>>();
+        setSize(that.rows(), that.cols());
         copyBlock(0, 0, that, 0, 0, that.rows(), that.cols());
     }
 

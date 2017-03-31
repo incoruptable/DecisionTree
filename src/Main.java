@@ -34,6 +34,6 @@ class Main {
         Random rand = new Random();
         testLearner(new BaselineLearner(), rand);
         testLearner(new DecisionTree(), rand);
-        //testLearner(new RandomForest(50));
+        testLearner(new RandomForest(), rand);
     }
 }
